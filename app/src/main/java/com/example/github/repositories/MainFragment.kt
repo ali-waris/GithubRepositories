@@ -1,21 +1,30 @@
 package com.example.github.repositories
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.get
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import com.example.github.repositories.data.MAX_RECORDS
 
 class MainFragment : Fragment() {
 
-    private val viewModel = MainViewModel()
+    private lateinit var viewModel: MainViewModel
 
     private var swipeRefresh: SwipeRefreshLayout? = null
     private var recyclerview: RecyclerView? = null
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        viewModel = ViewModelProvider(this).get()
+    }
 
     @SuppressLint("SetTextI18n")
     override fun onCreateView(
@@ -24,7 +33,6 @@ class MainFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_main, container, false)
-        viewModel.fetchItems()
 
         swipeRefresh = view.findViewById(R.id.swipe_refresh)
         swipeRefresh!!.setOnRefreshListener { viewModel.refresh() }
@@ -32,8 +40,8 @@ class MainFragment : Fragment() {
         recyclerview = view.findViewById(R.id.news_list)
         recyclerview!!.layoutManager = LinearLayoutManager(context)
 
-        viewModel.repositories.observeForever {
-            val adapter = RepositoryAdapter(it.take(20).toMutableList(), requireActivity())
+        viewModel.repositories.observe(viewLifecycleOwner) {
+            val adapter = RepositoryAdapter(it.take(MAX_RECORDS).toMutableList(), requireActivity())
             recyclerview!!.adapter = adapter
         }
         return view
