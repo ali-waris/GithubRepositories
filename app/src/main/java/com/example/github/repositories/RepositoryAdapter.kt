@@ -24,23 +24,24 @@ class RepositoryAdapter(
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.bindData()
+        holder.bindData(position)
     }
 
     inner class ViewHolder(ItemView: View) : RecyclerView.ViewHolder(ItemView) {
-        val container: View = itemView.findViewById(R.id.news_container)
-        val titleTxt: TextView = itemView.findViewById(R.id.title)
-        val imageVw: ImageView = itemView.findViewById(R.id.image)
-        val descriptionTxt: TextView = itemView.findViewById(R.id.description)
-        val authorTxt: TextView = itemView.findViewById(R.id.author)
+        private val container: View = itemView.findViewById(R.id.news_container)
+        private val titleTxt: TextView = itemView.findViewById(R.id.title)
+        private val imageVw: ImageView = itemView.findViewById(R.id.image)
+        private val descriptionTxt: TextView = itemView.findViewById(R.id.description)
+        private val authorTxt: TextView = itemView.findViewById(R.id.author)
 
-        @SuppressLint("SetTextI18n")
-        fun bindData() {
+        fun bindData(position: Int) {
             val item = list[adapterPosition]
-            titleTxt.text = "#" + (position + 1) + ": " + item.full_name!!.toUpperCase()
-            descriptionTxt.text = if (item.description!!.length > 150) item.description!!.take(150)
-                .plus("...") else item.description
-            authorTxt.text = item.owner!!.login
+            titleTxt.text = String.format("#${position + 1}: ${item.full_name?.uppercase()}")
+            item.description?.let { desc ->
+                descriptionTxt.text = if (desc.length > 150)
+                    desc.take(150).plus("...") else desc
+            }
+            authorTxt.text = item.owner?.login
             imageVw.setImageResource(
                 if (LocalDataStore.instance.getBookmarks().contains(item))
                     R.drawable.baseline_bookmark_black_24
@@ -50,7 +51,7 @@ class RepositoryAdapter(
             container.setOnClickListener {
                 activity.supportFragmentManager
                     .beginTransaction()
-                    .add(android.R.id.content, DetailFragment(item))
+                    .replace(android.R.id.content, DetailFragment(item))
                     .addToBackStack("detail")
                     .commit()
             }

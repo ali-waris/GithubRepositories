@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Git Repositories</string>
+    <string name="content_desc_user_image">user image</string>
+    <string name="content_desc_bookmark">bookmark</string>
 </resources>
