@@ -56,7 +56,7 @@ class DetailFragment(private val repository: RepositoryDTO) : Fragment() {
         detail?.setOnClickListener {
             requireActivity().supportFragmentManager
                 .beginTransaction()
-                .add(android.R.id.content, UserFragment(repository.owner!!))
+                .replace(android.R.id.content, UserFragment(repository.owner!!))
                 .addToBackStack("user")
                 .commit()
         }

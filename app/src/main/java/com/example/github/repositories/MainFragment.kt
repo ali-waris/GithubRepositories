@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ProgressBar
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.get
@@ -20,6 +21,7 @@ class MainFragment : Fragment() {
 
     private var swipeRefresh: SwipeRefreshLayout? = null
     private var recyclerview: RecyclerView? = null
+    private var progressBar: ProgressBar? = null
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -35,14 +37,20 @@ class MainFragment : Fragment() {
         val view = inflater.inflate(R.layout.fragment_main, container, false)
 
         swipeRefresh = view.findViewById(R.id.swipe_refresh)
-        swipeRefresh!!.setOnRefreshListener { viewModel.refresh() }
+        swipeRefresh?.setOnRefreshListener { viewModel.refresh() }
 
         recyclerview = view.findViewById(R.id.news_list)
-        recyclerview!!.layoutManager = LinearLayoutManager(context)
+        recyclerview?.layoutManager = LinearLayoutManager(context)
+
+        progressBar = view.findViewById(R.id.progress_bar)
 
         viewModel.repositories.observe(viewLifecycleOwner) {
             val adapter = RepositoryAdapter(it.take(MAX_RECORDS).toMutableList(), requireActivity())
-            recyclerview!!.adapter = adapter
+            recyclerview?.adapter = adapter
+        }
+
+        viewModel.showProgress.observe(viewLifecycleOwner) {
+            progressBar?.visibility = if (it) View.VISIBLE else View.GONE
         }
         return view
     }

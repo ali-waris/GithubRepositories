@@ -1,5 +1,6 @@
 package com.example.github.repositories
 
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -9,9 +10,14 @@ import kotlinx.coroutines.*
 
 class MainViewModel : ViewModel() {
 
-    val repositories = MutableLiveData<List<RepositoryDTO>>()
+    private val _repositories = MutableLiveData<List<RepositoryDTO>>()
+    val repositories: LiveData<List<RepositoryDTO>> = _repositories
+
+    private val _showProgress = MutableLiveData(false)
+    val showProgress: LiveData<Boolean> = _showProgress
 
     init {
+        _showProgress.value = true
         fetchItems()
     }
 
@@ -22,7 +28,8 @@ class MainViewModel : ViewModel() {
             withContext(Dispatchers.IO) {
                 response = service.searchRepositories(QUERY, SORT, ORDER)
             }
-            repositories.value = response?.items
+            _repositories.value = response?.items
+            _showProgress.value = false
         }
     }
 
@@ -33,7 +40,7 @@ class MainViewModel : ViewModel() {
             withContext(Dispatchers.IO) {
                 response = service.searchRepositories(QUERY, SORT, ORDER)
             }
-            repositories.value = response?.items
+            _repositories.value = response?.items
         }
     }
 }
