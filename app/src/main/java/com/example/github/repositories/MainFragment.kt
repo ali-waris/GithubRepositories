@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ProgressBar
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.get
@@ -37,7 +38,7 @@ class MainFragment : Fragment() {
         val view = inflater.inflate(R.layout.fragment_main, container, false)
 
         swipeRefresh = view.findViewById(R.id.swipe_refresh)
-        swipeRefresh?.setOnRefreshListener { viewModel.refresh() }
+        swipeRefresh?.setOnRefreshListener { viewModel.fetchItems() }
 
         recyclerview = view.findViewById(R.id.news_list)
         recyclerview?.layoutManager = LinearLayoutManager(context)
@@ -47,10 +48,19 @@ class MainFragment : Fragment() {
         viewModel.repositories.observe(viewLifecycleOwner) {
             val adapter = RepositoryAdapter(it.take(MAX_RECORDS).toMutableList(), requireActivity())
             recyclerview?.adapter = adapter
+            swipeRefresh?.isRefreshing = false
         }
 
         viewModel.showProgress.observe(viewLifecycleOwner) {
             progressBar?.visibility = if (it) View.VISIBLE else View.GONE
+        }
+
+        viewModel.error.observe(viewLifecycleOwner) {
+            if (it.isNotEmpty()) {
+                swipeRefresh?.isRefreshing = false
+                Toast.makeText(requireContext(), it, Toast.LENGTH_SHORT).show()
+                viewModel.resetError()
+            }
         }
         return view
     }

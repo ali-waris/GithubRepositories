@@ -54,11 +54,16 @@ class DetailFragment(private val repository: RepositoryDTO) : Fragment() {
             image!!.setImageResource(if (!isBookmarked) R.drawable.baseline_bookmark_black_24 else R.drawable.baseline_bookmark_border_black_24)
         }
         detail?.setOnClickListener {
-            requireActivity().supportFragmentManager
-                .beginTransaction()
-                .replace(android.R.id.content, UserFragment(repository.owner!!))
-                .addToBackStack("user")
-                .commit()
+            val userBackStack = "user"
+            val fragmentManager = requireActivity().supportFragmentManager
+            val popToUserFragment = fragmentManager.popBackStackImmediate (userBackStack, 0)
+            if (!popToUserFragment) {
+                fragmentManager
+                    .beginTransaction()
+                    .add(android.R.id.content, UserFragment(repository.owner!!))
+                    .addToBackStack(userBackStack)
+                    .commit()
+            }
         }
         return view
     }

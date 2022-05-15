@@ -1,17 +1,18 @@
 package com.example.github.repositories
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import com.example.github.repositories.data.GitHubEndpoints.Companion.service
 import com.example.github.repositories.data.RepositoryDTO
 import com.example.github.repositories.data.UserDTO
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
-class UserViewModel : ViewModel() {
-    private val _user = MutableLiveData<UserDTO>()
-    val user: LiveData<UserDTO> = _user
+
+class UserViewModel(userLogin: String) : ViewModel() {
+    private val _user = MutableLiveData<UserDTO?>()
+    val user: LiveData<UserDTO?> = _user
 
     private val _repositories = MutableLiveData<List<RepositoryDTO>>()
     val repositories: LiveData<List<RepositoryDTO>> = _repositories
@@ -19,14 +20,27 @@ class UserViewModel : ViewModel() {
     private val _showProgress = MutableLiveData(false)
     val showProgress: LiveData<Boolean> = _showProgress
 
-    fun fetchUser(username: String) {
+    private val _error = MutableLiveData("")
+    val error: LiveData<String> = _error
+
+    init {
+        fetchUser(userLogin)
+    }
+
+    private fun fetchUser(username: String) {
         viewModelScope.launch(Dispatchers.Main) {
             _showProgress.value = true
-            val userResponse = withContext(Dispatchers.IO) {
+            val user = withContext(Dispatchers.IO) {
                 delay(1_000) // This is to simulate network latency, please don't remove!
-                service.getUser(username)
+                val userResponse = service.getUser(username)
+                if (userResponse.isSuccessful)
+                    userResponse.body()
+                else {
+                    _error.postValue(userResponse.message())
+                    null
+                }
             }
-            _user.value = userResponse
+            _user.value = user
             _showProgress.value = false
         }
     }
@@ -34,12 +48,28 @@ class UserViewModel : ViewModel() {
     fun fetchRepositories(reposUrl: String) {
         viewModelScope.launch(Dispatchers.Main) {
             _showProgress.value = true
-            val repositoryResponse = withContext(Dispatchers.IO) {
+            val repositories = withContext(Dispatchers.IO) {
                 delay(1_000) // This is to simulate network latency, please don't remove!
-                service.getUserRepositories(reposUrl)
+                val repositoryResponse = service.getUserRepositories(reposUrl)
+                if (repositoryResponse.isSuccessful)
+                    repositoryResponse.body()
+                else {
+                    _error.postValue(repositoryResponse.message())
+                    null
+                }
             }
-            _repositories.value = repositoryResponse
+            repositories?.let { _repositories.value = it }
             _showProgress.value = false
         }
+    }
+
+    fun resetError() {
+        _error.value = ""
+    }
+}
+
+class UserViewModelFactory(private val user: String) : ViewModelProvider.Factory {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        return UserViewModel(user) as T
     }
 }

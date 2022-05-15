@@ -1,6 +1,6 @@
 package com.example.github.repositories.data
 
-data class Response(
+data class RepositoryResponse(
     val total_count: String,
     val incomplete_results: Boolean,
     val items: MutableList<RepositoryDTO>

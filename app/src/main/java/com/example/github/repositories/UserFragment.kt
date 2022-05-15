@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
+import android.widget.Toast
 import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -30,7 +31,7 @@ class UserFragment(private val user: OwnerDTO) : Fragment() {
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        viewModel = ViewModelProvider(this).get()
+        viewModel = ViewModelProvider(this, UserViewModelFactory(user.login)).get()
     }
 
     @SuppressLint("SetTextI18n")
@@ -50,13 +51,15 @@ class UserFragment(private val user: OwnerDTO) : Fragment() {
         title?.text = user.login
         Picasso.get().load(user.avatar_url.toUri()).into(image)
 
-        viewModel.fetchUser(user.login)
         viewModel.user.observe(viewLifecycleOwner) {
-            it.twitter_username?.let { twitterHandle ->
+            it?.twitter_username?.let { twitterHandle ->
                 if (twitterHandle.isNotEmpty())
                     detail?.text = "Twitter handle: $twitterHandle"
             }
-            viewModel.fetchRepositories(it.repos_url!!)
+
+            it?.repos_url?.let { reposUrl ->
+                viewModel.fetchRepositories(reposUrl)
+            }
         }
         viewModel.repositories.observe(viewLifecycleOwner) {
             list?.adapter = RepositoryAdapter(it.toMutableList(), requireActivity())
@@ -65,6 +68,14 @@ class UserFragment(private val user: OwnerDTO) : Fragment() {
         viewModel.showProgress.observe(viewLifecycleOwner) {
             progressBar?.visibility = if (it) View.VISIBLE else View.GONE
         }
+
+        viewModel.error.observe(viewLifecycleOwner) {
+            if (it.isNotEmpty()) {
+                Toast.makeText(requireContext(), it, Toast.LENGTH_SHORT).show()
+                viewModel.resetError()
+            }
+        }
+
         return view
     }
 }
