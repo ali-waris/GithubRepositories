@@ -2,6 +2,7 @@ package com.example.github.repositories
 
 import androidx.lifecycle.*
 import com.example.github.repositories.data.GitHubEndpoints.Companion.service
+import com.example.github.repositories.data.LocalDataStore
 import com.example.github.repositories.data.RepositoryDTO
 import com.example.github.repositories.data.UserDTO
 import kotlinx.coroutines.Dispatchers
@@ -10,7 +11,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 
-class UserViewModel(userLogin: String) : ViewModel() {
+class UserViewModel(userLogin: String, private val localDataStore: LocalDataStore) : ViewModel() {
     private val _user = MutableLiveData<UserDTO?>()
     val user: LiveData<UserDTO?> = _user
 
@@ -23,8 +24,18 @@ class UserViewModel(userLogin: String) : ViewModel() {
     private val _error = MutableLiveData("")
     val error: LiveData<String> = _error
 
+    private val _bookmarks = MutableLiveData<List<Int?>>()
+    val bookmarks: LiveData<List<Int?>> = _bookmarks
+
     init {
+        getBookmarks()
         fetchUser(userLogin)
+    }
+
+    fun getBookmarks() {
+        viewModelScope.launch(Dispatchers.IO) {
+            _bookmarks.postValue(localDataStore.getBookmarks())
+        }
     }
 
     private fun fetchUser(username: String) {
@@ -68,8 +79,8 @@ class UserViewModel(userLogin: String) : ViewModel() {
     }
 }
 
-class UserViewModelFactory(private val user: String) : ViewModelProvider.Factory {
+class UserViewModelFactory(private val user: String, private val localDataStore: LocalDataStore) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        return UserViewModel(user) as T
+        return UserViewModel(user, localDataStore) as T
     }
 }

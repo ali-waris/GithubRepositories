@@ -5,3 +5,4 @@ const val QUERY = "android+language:kotlin"
 const val SORT = "stars"
 const val ORDER = "desc"
 const val MAX_RECORDS = 20
+const val BOOKMARK_EVENT = "bookmark-event"

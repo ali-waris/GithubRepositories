@@ -1,7 +1,10 @@
 package com.example.github.repositories
 
 import android.annotation.SuppressLint
+import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -14,7 +17,10 @@ import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.get
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.github.repositories.data.BOOKMARK_EVENT
+import com.example.github.repositories.data.LocalDataStore
 import com.example.github.repositories.data.OwnerDTO
 import com.squareup.picasso.Picasso
 
@@ -29,9 +35,17 @@ class UserFragment(private val user: OwnerDTO) : Fragment() {
     private var list: RecyclerView? = null
     private var progressBar: ProgressBar? = null
 
+    private var adapter: RepositoryAdapter? = null
+
+    private val mReceiver: BroadcastReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            viewModel.getBookmarks()
+        }
+    }
+
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        viewModel = ViewModelProvider(this, UserViewModelFactory(user.login)).get()
+        viewModel = ViewModelProvider(this, UserViewModelFactory(user.login, LocalDataStore(requireContext()))).get()
     }
 
     @SuppressLint("SetTextI18n")
@@ -62,7 +76,9 @@ class UserFragment(private val user: OwnerDTO) : Fragment() {
             }
         }
         viewModel.repositories.observe(viewLifecycleOwner) {
-            list?.adapter = RepositoryAdapter(it.toMutableList(), requireActivity())
+            adapter = RepositoryAdapter(it.toMutableList(), requireActivity(),
+                viewModel.bookmarks.value?: listOf())
+            list?.adapter = adapter
         }
 
         viewModel.showProgress.observe(viewLifecycleOwner) {
@@ -76,6 +92,22 @@ class UserFragment(private val user: OwnerDTO) : Fragment() {
             }
         }
 
+        viewModel.bookmarks.observe(viewLifecycleOwner) {
+            adapter?.updateBookmarks(it)
+        }
+
         return view
+    }
+
+    override fun onResume() {
+        super.onResume()
+        LocalBroadcastManager.getInstance(requireContext()).registerReceiver(mReceiver,
+            IntentFilter(BOOKMARK_EVENT)
+        )
+    }
+
+    override fun onPause() {
+        super.onPause()
+        LocalBroadcastManager.getInstance(requireContext()).unregisterReceiver(mReceiver)
     }
 }

@@ -1,6 +1,5 @@
 package com.example.github.repositories
 
-import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -8,13 +7,18 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.RecyclerView
-import com.example.github.repositories.data.LocalDataStore
 import com.example.github.repositories.data.RepositoryDTO
 
 class RepositoryAdapter(
     val list: List<RepositoryDTO>,
-    val activity: FragmentActivity
+    val activity: FragmentActivity,
+    var bookmarks: List<Int?>
 ) : RecyclerView.Adapter<RepositoryAdapter.ViewHolder>() {
+
+    fun updateBookmarks(updatedBookmarks: List<Int?>) {
+        bookmarks = updatedBookmarks
+        notifyDataSetChanged()
+    }
 
     override fun getItemCount(): Int = list.size
 
@@ -43,7 +47,7 @@ class RepositoryAdapter(
             }
             authorTxt.text = item.owner?.login
             imageVw.setImageResource(
-                if (LocalDataStore.instance.getBookmarks().contains(item))
+                if (bookmarks.contains(item.id))
                     R.drawable.baseline_bookmark_black_24
                 else
                     R.drawable.baseline_bookmark_border_black_24
