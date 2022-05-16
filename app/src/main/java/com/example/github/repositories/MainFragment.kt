@@ -1,6 +1,7 @@
 package com.example.github.repositories
 
 import android.annotation.SuppressLint
+import android.app.AlertDialog
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -10,7 +11,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ProgressBar
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.get
@@ -52,7 +52,7 @@ class MainFragment : Fragment() {
         val view = inflater.inflate(R.layout.fragment_main, container, false)
 
         swipeRefresh = view.findViewById(R.id.swipe_refresh)
-        swipeRefresh?.setOnRefreshListener { viewModel.fetchItems() }
+        swipeRefresh?.setOnRefreshListener { viewModel.fetchItems(false) }
 
         recyclerview = view.findViewById(R.id.news_list)
         recyclerview?.layoutManager = LinearLayoutManager(context)
@@ -73,7 +73,16 @@ class MainFragment : Fragment() {
         viewModel.error.observe(viewLifecycleOwner) {
             if (it.isNotEmpty()) {
                 swipeRefresh?.isRefreshing = false
-                Toast.makeText(requireContext(), it, Toast.LENGTH_SHORT).show()
+                AlertDialog.Builder(requireContext())
+                    .setTitle(getString(R.string.error))
+                    .setMessage(it)
+                    .setCancelable(false)
+                    .setPositiveButton(
+                        getString(R.string.retry)
+                    ) { _, _ ->
+                        viewModel.fetchItems()
+                    }
+                    .show()
                 viewModel.resetError()
             }
         }

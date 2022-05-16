@@ -22,10 +22,7 @@ class MainViewModel(private val localDataStore: LocalDataStore) : ViewModel() {
     private val _bookmarks = MutableLiveData<List<Int?>>()
     val bookmarks: LiveData<List<Int?>> = _bookmarks
 
-    init {
-        _showProgress.value = true
-        fetchItems()
-    }
+    init { fetchItems() }
 
     fun getBookmarks() {
         viewModelScope.launch(Dispatchers.IO) {
@@ -33,8 +30,10 @@ class MainViewModel(private val localDataStore: LocalDataStore) : ViewModel() {
         }
     }
 
-    fun fetchItems() {
+    fun fetchItems(showProgress: Boolean = true) {
         viewModelScope.launch(Dispatchers.Main) {
+            if (showProgress)
+                _showProgress.value = true
             val repositories = withContext(Dispatchers.IO) {
                 getBookmarks()
                 delay(1_000) // This is to simulate network latency, please don't remove!

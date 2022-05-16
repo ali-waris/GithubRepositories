@@ -14,16 +14,16 @@ class ErrorInterceptor : Interceptor {
             val builder: Request.Builder = chain.request().newBuilder()
             chain.proceed(builder.build())
         } catch (e:Exception) {
-            var msg = ""
+            val msg: String
             when (e) {
                 is SocketTimeoutException -> {
-                    msg = "Timeout - Please check your internet connection"
+                    msg = "Timeout - Please check your internet connection."
                 }
                 is UnknownHostException -> {
-                    msg = "Unable to make a connection. Please check your internet"
+                    msg = "Unable to make a connection. Please check your internet."
                 }
                 is ConnectionShutdownException -> {
-                    msg = "Connection shutdown. Please check your internet"
+                    msg = "Connection shutdown. Please check your internet."
                 }
                 is IOException -> {
                     msg = "Server is unreachable, please try again later."

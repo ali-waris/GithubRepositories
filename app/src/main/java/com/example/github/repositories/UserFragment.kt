@@ -1,6 +1,7 @@
 package com.example.github.repositories
 
 import android.annotation.SuppressLint
+import android.app.AlertDialog
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -12,7 +13,6 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
-import android.widget.Toast
 import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -87,7 +87,16 @@ class UserFragment(private val user: OwnerDTO) : Fragment() {
 
         viewModel.error.observe(viewLifecycleOwner) {
             if (it.isNotEmpty()) {
-                Toast.makeText(requireContext(), it, Toast.LENGTH_SHORT).show()
+                AlertDialog.Builder(requireContext())
+                    .setTitle(getString(R.string.error))
+                    .setMessage(it)
+                    .setCancelable(false)
+                    .setPositiveButton(
+                        getString(R.string.retry)
+                    ) { _, _ ->
+                        viewModel.fetchUser()
+                    }
+                    .show()
                 viewModel.resetError()
             }
         }

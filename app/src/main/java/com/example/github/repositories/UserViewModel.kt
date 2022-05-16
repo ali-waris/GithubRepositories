@@ -11,7 +11,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 
-class UserViewModel(userLogin: String, private val localDataStore: LocalDataStore) : ViewModel() {
+class UserViewModel(private val userLogin: String, private val localDataStore: LocalDataStore) : ViewModel() {
     private val _user = MutableLiveData<UserDTO?>()
     val user: LiveData<UserDTO?> = _user
 
@@ -29,7 +29,7 @@ class UserViewModel(userLogin: String, private val localDataStore: LocalDataStor
 
     init {
         getBookmarks()
-        fetchUser(userLogin)
+        fetchUser()
     }
 
     fun getBookmarks() {
@@ -38,12 +38,12 @@ class UserViewModel(userLogin: String, private val localDataStore: LocalDataStor
         }
     }
 
-    private fun fetchUser(username: String) {
+    fun fetchUser() {
         viewModelScope.launch(Dispatchers.Main) {
             _showProgress.value = true
             val user = withContext(Dispatchers.IO) {
                 delay(1_000) // This is to simulate network latency, please don't remove!
-                val userResponse = service.getUser(username)
+                val userResponse = service.getUser(userLogin)
                 if (userResponse.isSuccessful)
                     userResponse.body()
                 else {
