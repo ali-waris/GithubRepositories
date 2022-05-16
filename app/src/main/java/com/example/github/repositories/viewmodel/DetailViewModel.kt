@@ -1,4 +1,4 @@
-package com.example.github.repositories
+package com.example.github.repositories.viewmodel
 
 import android.content.Intent
 import androidx.lifecycle.*

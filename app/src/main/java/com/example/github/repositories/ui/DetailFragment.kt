@@ -1,4 +1,4 @@
-package com.example.github.repositories
+package com.example.github.repositories.ui
 
 import android.content.Context
 import android.os.Bundle
@@ -11,6 +11,9 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.get
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import com.example.github.repositories.viewmodel.DetailViewModel
+import com.example.github.repositories.viewmodel.DetailViewModelFactory
+import com.example.github.repositories.R
 import com.example.github.repositories.data.LocalDataStore
 import com.example.github.repositories.data.RepositoryDTO
 import com.squareup.picasso.Picasso

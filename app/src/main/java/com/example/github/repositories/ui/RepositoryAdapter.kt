@@ -1,4 +1,4 @@
-package com.example.github.repositories
+package com.example.github.repositories.ui
 
 import android.view.LayoutInflater
 import android.view.View
@@ -7,6 +7,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.RecyclerView
+import com.example.github.repositories.R
 import com.example.github.repositories.data.RepositoryDTO
 
 class RepositoryAdapter(

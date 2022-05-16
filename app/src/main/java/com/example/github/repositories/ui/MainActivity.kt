@@ -1,4 +1,4 @@
-package com.example.github.repositories
+package com.example.github.repositories.ui
 
 import android.os.Bundle
 import android.widget.FrameLayout
